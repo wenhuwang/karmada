@@ -24,6 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -119,14 +120,16 @@ func GetWorksByLabelsSet(c client.Client, ls labels.Set) (*workv1alpha1.WorkList
 // GetWorksByBindingNamespaceName get WorkList by matching same Namespace and same Name.
 func GetWorksByBindingNamespaceName(c client.Client, bindingNamespace, bindingName string) (*workv1alpha1.WorkList, error) {
 	referenceKey := names.GenerateBindingReferenceKey(bindingNamespace, bindingName)
-	var ls labels.Set
+	var key string
 	if bindingNamespace != "" {
-		ls = labels.Set{workv1alpha2.ResourceBindingReferenceKey: referenceKey}
+		key = workv1alpha2.ResourceBindingReferenceKey
 	} else {
-		ls = labels.Set{workv1alpha2.ClusterResourceBindingReferenceKey: referenceKey}
+		key = workv1alpha2.ClusterResourceBindingReferenceKey
 	}
 
-	workList, err := GetWorksByLabelsSet(c, ls)
+	workList := &workv1alpha1.WorkList{}
+	listOpt := &client.ListOptions{FieldSelector: fields.OneTermEqualSelector(key, referenceKey)}
+	err := c.List(context.TODO(), workList, listOpt)
 	if err != nil {
 		return nil, err
 	}
