@@ -25,6 +25,7 @@ import (
 
 	clusterv1alpha1 "github.com/karmada-io/karmada/pkg/apis/cluster/v1alpha1"
 	workv1alpha1 "github.com/karmada-io/karmada/pkg/apis/work/v1alpha1"
+	workv1alpha2 "github.com/karmada-io/karmada/pkg/apis/work/v1alpha2"
 	"github.com/karmada-io/karmada/pkg/util"
 	"github.com/karmada-io/karmada/pkg/util/names"
 )
@@ -69,6 +70,31 @@ func NewExecutionPredicate(mgr controllerruntime.Manager) predicate.Funcs {
 			return predFunc("delete", deleteEvent.Object)
 		},
 		GenericFunc: func(event.GenericEvent) bool {
+			return false
+		},
+	}
+}
+
+func NewBindingPredicate() predicate.Funcs {
+	return predicate.Funcs{
+		CreateFunc: func(createEvent event.CreateEvent) bool {
+			obj := createEvent.Object.(*workv1alpha2.ResourceBinding)
+			klog.V(4).Infof("Create event for ResourceBinding %s/%s", obj.Namespace, obj.Name)
+			return true
+		},
+		UpdateFunc: func(updateEvent event.UpdateEvent) bool {
+			obj := updateEvent.ObjectNew.(*workv1alpha2.ResourceBinding)
+			klog.V(4).Infof("Update event for ResourceBinding %s/%s", obj.Namespace, obj.Name)
+			return true
+		},
+		DeleteFunc: func(deleteEvent event.DeleteEvent) bool {
+			obj := deleteEvent.Object.(*workv1alpha2.ResourceBinding)
+			klog.V(4).Infof("Delete event for ResourceBinding %s/%s", obj.Namespace, obj.Name)
+			return true
+		},
+		GenericFunc: func(genericEvent event.GenericEvent) bool {
+			obj := genericEvent.Object.(*workv1alpha2.ResourceBinding)
+			klog.V(4).Infof("Generic event for ResourceBinding %s/%s is ignored", obj.Namespace, obj.Name)
 			return false
 		},
 	}

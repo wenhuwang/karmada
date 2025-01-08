@@ -350,6 +350,7 @@ func startBindingController(ctx controllerscontext.Context) (enabled bool, err e
 		InformerManager:     ctx.ControlPlaneInformerManager,
 		ResourceInterpreter: ctx.ResourceInterpreter,
 		RateLimiterOptions:  ctx.Opts.RateLimiterOptions,
+		PredicateFunc:       helper.NewBindingPredicate(),
 	}
 	if err := bindingController.SetupWithManager(ctx.Mgr); err != nil {
 		return false, err
